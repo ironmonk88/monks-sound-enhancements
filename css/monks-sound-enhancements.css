@@ -1,0 +1,118 @@
+.sheet .sound-sheet .items-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    color: #7a7971;
+    margin-bottom: 10px;
+}
+
+.sheet .sound-sheet .items-list .item-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-height: 100px;
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.sheet .sound-sheet .items-list .item-name {
+    flex: 2;
+    margin: 0;
+    overflow: hidden;
+    font-size: 13px;
+    text-align: left;
+    align-items: center;
+}
+
+.sheet .sound-sheet .items-list .item-name h3,
+.sheet .sound-sheet .items-list .item-name h4 {
+    margin: 0;
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+}
+
+.sheet .sound-sheet .items-list .item-controls {
+    flex: 0 0 50px;
+    justify-content: space-between;
+}
+
+.sheet .sound-sheet .items-list .items-header .item-controls {
+    flex: 0 0 80px;
+}
+
+.sheet .sound-sheet .items-list .item-controls a {
+    font-size: 12px;
+    text-align: center;
+}
+
+.sheet .sound-sheet .items-list .item {
+    align-items: center;
+    padding: 4px 2px;
+    border-bottom: 1px solid #c9c7b8;
+}
+
+.sheet .sound-sheet .items-list .item:last-child {
+    border-bottom: none;
+}
+
+.sheet .sound-sheet .items-list .item .item-name {
+    color: #191813;
+}
+
+.sheet .sound-sheet .items-list .item .item-name .item-image {
+    flex: 0 0 30px;
+    height: 30px;
+    background-size: 30px;
+    border: none;
+    margin-right: 5px;
+}
+
+.sheet .sound-sheet .items-list .item.received .item-name .item-image {
+    filter: grayscale(100%);
+    opacity: 0.7;
+}
+
+.sheet .sound-sheet .items-list .items-header {
+    height: 28px;
+    margin: 2px 0;
+    padding: 0;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.05);
+    border: 2px groove #eeede0;
+    font-weight: bold;
+}
+
+.sheet .sound-sheet .items-list .items-header > * {
+    font-size: 12px;
+    text-align: center;
+}
+
+.sheet .sound-sheet .items-list .items-header h3 {
+    padding-left: 5px;
+    font-family: "Modesto Condensed", "Palatino Linotype", serif;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: left;
+    font-size: 16px;
+}
+
+.sheet .sound-sheet .items-list .item-list .item-control.action-play .active {
+    color: var(--color-text-hyperlink);
+}
+
+.sheet .sound-sheet .items-list .item-list .item-control.action-play i {
+    transform: rotate(0);
+}
+
+@keyframes spin {
+    100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+.sheet .sound-sheet .items-list .item-list .item-control.action-play .fa-sync {
+    animation: spin 4s linear infinite;
+}
