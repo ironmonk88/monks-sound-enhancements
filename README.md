@@ -7,11 +7,6 @@ This is some enhancements to the way Foundry handles playlist and sounds
 Simply use the install module screen within the FoundryVTT setup
 
 ## Usage & Current Features
-Pressing the page number on the standard Hotbar will expand all Hotbar rows, and allow you to drag and drop on any of the rows.
-It will allow you to directly pick the row you wish to see by clicking the number beside the expanded rows, rather than paging to it.
-And clicking the trash can will allow you to clear an entire row of macros.
-
-## Sound List
 
 ![monks-sound-enhancements](/screenshots/list.png)
 
