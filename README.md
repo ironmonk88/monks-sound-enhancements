@@ -12,6 +12,9 @@ It will allow you to directly pick the row you wish to see by clicking the numbe
 And clicking the trash can will allow you to clear an entire row of macros.
 
 ## Sound List
+
+![monks-sound-enhancements](/screenshots/list.png)
+
 When you open up a playlist configuration, a second tab has been added that will list all the sounds associated with that play list.  This is most helpful when viewing a playlist that is in a compendium as you can now see what sounds are associated with the playlist before importing it.
 
 A play button has been added so you can listen to the sound file personally without needig to play it through the Plalist interface and possibly broadcasting it to the players.
