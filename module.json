@@ -1,0 +1,34 @@
+{
+	"name": "monks-sound-enhancements",
+	"title": "Monk's Sound Enhancements",
+	"description": "",
+	"version": "1.0.0",
+	"minimumCoreVersion": "9",
+	"compatibleCoreVersion": "9",
+	"author": "IronMonk",
+	"authors": [
+		{
+			"name": "IronMonk",
+			"discord": "ironmonk88#4075",
+			"patreon": "https://www.patreon.com/ironmonk",
+			"ko-fi": "https://ko-fi.com/ironmonk88"
+		}
+	],
+	"socket": true,
+	"languages": [
+		{
+			"lang": "en",
+			"name": "English",
+			"path": "lang/en.json"
+		}
+	],
+	"esmodules": [
+		"monks-sound-enhancements.js"
+	],
+	"styles": [ "css/monks-sound-enhancements.css" ],
+	"url": "https://github.com/ironmonk88/monks-sound-enhancements",
+	"download": "https://github.com/ironmonk88/monks-sound-enhancements/archive/1.0.0.zip",
+	"manifest": "https://github.com/ironmonk88/monks-sound-enhancements/releases/latest/download/module.json",
+	"bugs": "https://github.com/ironmonk88/monks-sound-enhancements/issues",
+	"allowBugReporter": true
+}
