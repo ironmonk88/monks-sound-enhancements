@@ -17,9 +17,9 @@ And clicking the trash can will allow you to clear an entire row of macros.
 
 When you open up a playlist configuration, a second tab has been added that will list all the sounds associated with that play list.  This is most helpful when viewing a playlist that is in a compendium as you can now see what sounds are associated with the playlist before importing it.
 
-A play button has been added so you can listen to the sound file personally without needig to play it through the Plalist interface and possibly broadcasting it to the players.
+A play button has been added so you can listen to the sound file personally without needing to play it through the Playlist interface and possibly broadcasting it to the players.
 
-You can drag and drop individual sound files onto play lists.  So you can view a playlist within a compendium, listen to the sound file, and if it's one you'd like to include you can drop it into an active playlist.
+You can drag and drop individual sound files onto play lists.  So you can view a playlist within a compendium, listen to the sound file, and if it's one you'd like to include you can drag and drop it into an active playlist.
 
 Also, if you are importing from a compendium, there will be checkboxes available to individually select files you wish to be included when you import the playlist.  So you no longer need to import the entire list if you only want to include a few tracks.
 
