@@ -1,7 +1,7 @@
 {
 	"name": "monks-sound-enhancements",
 	"title": "Monk's Sound Enhancements",
-	"description": "",
+	"description": "Sound changes to make things better",
 	"version": "1.0.0",
 	"minimumCoreVersion": "9",
 	"compatibleCoreVersion": "9",
@@ -23,9 +23,12 @@
 		}
 	],
 	"esmodules": [
-		"monks-sound-enhancements.js"
+		"monks-sound-enhancements.js",
+		"settings.js"
 	],
-	"styles": [ "css/monks-sound-enhancements.css" ],
+	"styles": [
+		"css/monks-sound-enhancements.css"
+	],
 	"url": "https://github.com/ironmonk88/monks-sound-enhancements",
 	"download": "https://github.com/ironmonk88/monks-sound-enhancements/archive/1.0.0.zip",
 	"manifest": "https://github.com/ironmonk88/monks-sound-enhancements/releases/latest/download/module.json",
