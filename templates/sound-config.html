@@ -16,7 +16,7 @@
             {{#each sounds}}
             <li class="item flexrow" data-sound-id="{{this.id}}" data-pack-id="{{@root.pack}}" data-playlist-id="{{@root.playlist}}" draggable="true">
                 <div class="item-name flexrow">
-                    {{#if @root.compendium}}<input type="checkbox" class="select-sound" />{{/if}}
+                    <input type="checkbox" class="select-sound" />
                     <h4>{{{this.name}}}</h4>
                 </div>
 

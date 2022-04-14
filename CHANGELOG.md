@@ -1,3 +1,9 @@
+# Version 1.0.2
+
+Looks like the refresh and delete issue were Foundry related.  It's been fixed in 9.268 so I'm removing it from my code.
+
+Added the option to editing a playlist and select multiple tracks to delete, rather than having to click on each one individually to delete.
+
 # Version 1.0.1
 
 Fixed Foundry issues with updating a playlist when sounds have been added.

@@ -52,6 +52,7 @@ export class MonksSoundEnhancements {
             }
         }
 
+        /*
         let onPlaylistSoundCreate = async function (wrapped, ...args) {
             if (args[1]?.parent?._playbackOrder)
                 args[1].parent._playbackOrder = undefined;
@@ -67,7 +68,7 @@ export class MonksSoundEnhancements {
             PlaylistSound.prototype.constructor.create = function (event) {
                 return onPlaylistSoundCreate.call(this, oldCreate.bind(this));
             }
-        }
+        }*/
 
         let onHeaderButtons = function (wrapped, ...args) {
             let buttons = wrapped(...args);
@@ -242,6 +243,43 @@ export class MonksSoundEnhancements {
                         top: Math.min(li[0].offsetTop, window.innerHeight - 350),
                         left: window.innerWidth - 720
                     })
+                }
+            },
+            {
+                name: "Clear Selected Sounds",
+                icon: '<i class="fas fa-dumpster"></i>',
+                conditional: (li) => {
+                    const packId = li.data("packId");
+                    return !packId;
+                },
+                callback: async (li) => {
+                    const packId = li.data("packId");
+                    let playlist;
+                    if (packId) {
+                        let pack = game.packs.get(packId);
+                        playlist = await pack.getDocument(li.data("playlistId"));
+                    } else {
+                        playlist = game.playlists.get(li.data("playlistId"));
+                    }
+                    const sound = playlist.sounds.get(li.data("soundId"));
+
+                    let sounds = [];
+                    let checkedSounds = $('.select-sound:checked', this.element);
+                    if (checkedSounds.length) {
+                        for (let chk of checkedSounds) {
+                            sounds.push(chk.closest(".item").dataset.soundId);
+                        }
+
+                        const type = game.i18n.localize(sound.constructor.metadata.label);
+
+                        return Dialog.confirm({
+                            title: `${game.i18n.format("DOCUMENT.Delete", { type })}`,
+                            content: `<h4>${game.i18n.localize("AreYouSure")}</h4><p>You're removing ${sounds.length} sounds.  These sounds will be permanently deleted and cannote be recovered.</p>`,
+                            yes: () => {
+                                PlaylistSound.deleteDocuments(sounds, { parent: sound.parent });
+                            }
+                        });
+                    }
                 }
             },
         ];
