@@ -1,0 +1,11 @@
+# Version 1.0.1
+
+Fixed Foundry issues with updating a playlist when sounds have been added.
+
+Fixed issues with dragging and dropping a sound file from a Compendium onto a Playlist
+
+Added the option to add a sound from the Playlist edit config
+
+Added the option to drag and drop a sound file onto the Sound Config dialog to update with the dropped sounds information.
+
+Fixed an issue where it would try and stop sounds on a playlist that had no sounds.

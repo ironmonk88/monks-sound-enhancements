@@ -52,6 +52,23 @@ export class MonksSoundEnhancements {
             }
         }
 
+        let onPlaylistSoundCreate = async function (wrapped, ...args) {
+            if (args[1]?.parent?._playbackOrder)
+                args[1].parent._playbackOrder = undefined;
+            return wrapped(...args).then(() => {
+                ui.playlists.render(true);
+            });
+        }
+
+        if (game.modules.get("lib-wrapper")?.active) {
+            libWrapper.register("monks-sound-enhancements", "PlaylistSound.prototype.constructor.create", onPlaylistSoundCreate, "WRAPPER");
+        } else {
+            const oldCreate = PlaylistSound.prototype.constructor.create;
+            PlaylistSound.prototype.constructor.create = function (event) {
+                return onPlaylistSoundCreate.call(this, oldCreate.bind(this));
+            }
+        }
+
         let onHeaderButtons = function (wrapped, ...args) {
             let buttons = wrapped(...args);
 
@@ -109,7 +126,14 @@ export class MonksSoundEnhancements {
             playlist: data.document.id,
             compendium: !data.document.isEmbedded && data.document.compendium && data.document.constructor.canUserCreate(game.user)
         };
-        configData.sounds = app.object.data.sounds.map(s => { return { id: s.id, name: s.name, sort: s.sort } }).sort(app.object._sortSounds.bind(app.object));
+
+        configData.sounds = app.object.data.sounds
+            .filter(s => !!s)
+            .map(s => {
+                return {
+                    id: s.id, name: s.name, sort: s.sort, data: { name: s.name, sort: s.sort } }
+            })
+            .sort(app.object._sortSounds.bind(app.object));
 
         let soundsHtml = await renderTemplate("modules/monks-sound-enhancements/templates/sound-config.html", configData);
 
@@ -133,6 +157,7 @@ export class MonksSoundEnhancements {
             );
         }
 
+        $('.action-create', html).on("click", MonksSoundEnhancements.soundCreate.bind(app, app.object));
         $('.action-play', html).on("click", MonksSoundEnhancements.playsound.bind(this, app));
 
         app.options.tabs = [{ navSelector: ".tabs", contentSelector: "form", initial: "basic" }];
@@ -161,6 +186,18 @@ export class MonksSoundEnhancements {
         app._sounds = {};
 
         app._restoreScrollPositions(html);
+    }
+
+    static async addSoundDrop(app, html, data) {
+        let el = html[0];
+
+        app.options.dragDrop = [{ dropSelector: "form" }];
+        app._onDrop = MonksSoundEnhancements._onDropSound;
+        if (!app._dragDrop.length) {
+            app._dragDrop = app._createDragDropHandlers();
+        } else
+            el = el.parentElement;
+        app._dragDrop.forEach(d => d.bind(el));
     }
 
     static _getSoundContextOptions() {
@@ -211,10 +248,17 @@ export class MonksSoundEnhancements {
     }
 
     static closeConfig(app, html) {
-        for (let sound of Object.values(app._sounds)) {
-            if (sound.playing)
-                sound.stop();
+        if (app._sounds) {
+            for (let sound of Object.values(app._sounds)) {
+                if (sound.playing)
+                    sound.stop();
+            }
         }
+    }
+
+    static soundCreate(playlist) {
+        const sound = new PlaylistSound({ name: game.i18n.localize("SOUND.New") }, { parent: playlist });
+        sound.sheet.render(true);
     }
 
     static async playsound(app, event) {
@@ -295,7 +339,7 @@ export class MonksSoundEnhancements {
                 } else {
                     destination = game.playlists.get(target.dataset.playlistId);
                 }
-                return PlaylistSound.implementation.create(sound.toObject(), { parent: destination });
+                return PlaylistSound.constructor.create(sound.toObject(), { parent: destination });
             } else {
                 // If there's nothing to sort relative to, or the sound was dropped on itself, do nothing.
                 const targetId = target.dataset.soundId;
@@ -307,6 +351,41 @@ export class MonksSoundEnhancements {
             }
         }
     }
+
+    static async _onDropSound(event) {
+        let data;
+
+        try {
+            data = JSON.parse(event.dataTransfer.getData('text/plain'));
+        }
+        catch (err) {
+            return;
+        }
+
+        if (data.type == "PlaylistSound") {
+            // Reference the target playlist and sound elements
+            let source;
+            if (data.packId) {
+                let pack = game.packs.get(data.packId);
+                source = await pack.getDocument(data.playlistId);
+            } else {
+                source = game.playlists.get(data.playlistId);
+            }
+            const sound = source.sounds.get(data.soundId);
+
+            //fill in the information on the form with the sound information
+            let soundObj = sound.toObject();
+            this.object.data.description = soundObj.description;
+            this.object.data.fade = soundObj.fade;
+            this.object.data.flags = soundObj.flags;
+            this.object.data.name = soundObj.name;
+            this.object.data.path = soundObj.path;
+            this.object.data.repeat = soundObj.repeat;
+            this.object.data.volume = soundObj.volume;
+            this.render();
+            window.setTimeout(() => { $('[name="name"]', this.element).val(this.object.data.name); }, 200);
+        }
+    }
 }
 
 Hooks.on("init", MonksSoundEnhancements.init);
@@ -314,3 +393,4 @@ Hooks.on("ready", MonksSoundEnhancements.ready);
 Hooks.on("renderCompendium", MonksSoundEnhancements.updatePlaylistCompendium);
 Hooks.on("closePlaylistConfig", MonksSoundEnhancements.closeConfig)
 Hooks.on('renderPlaylistConfig', MonksSoundEnhancements.injectPlaylistTabs);
+Hooks.on('renderPlaylistSoundConfig', MonksSoundEnhancements.addSoundDrop);

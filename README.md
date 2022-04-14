@@ -18,6 +18,8 @@ You can drag and drop individual sound files onto play lists.  So you can view a
 
 Also, if you are importing from a compendium, there will be checkboxes available to individually select files you wish to be included when you import the playlist.  So you no longer need to import the entire list if you only want to include a few tracks.
 
+If you are editing a sound file, dragging another sound file onto the sound config dialog will update all the information with the dropped sound information.
+
 ## Bug Reporting
 Please feel free to contact me on discord if you have any questions or concerns. ironmonk88#4075
 
