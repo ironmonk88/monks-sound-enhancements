@@ -1,3 +1,5 @@
 {
-  "MonksSoundEnhancements.Add": "Add"
+  "MonksSoundEnhancements.Add": "Add",
+  "MonksEnhancedJournal.change-style.name": "Change Playlist Style",
+  "MonksEnhancedJournal.change-style.hint": "Add additional styles to make it a little more obvious what tracks are playing"
 }

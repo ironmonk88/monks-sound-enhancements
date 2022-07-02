@@ -1,3 +1,5 @@
+import { registerSettings } from "./settings.js";
+
 export let debug = (...args) => {
     if (debugEnabled > 1) console.log("DEBUG: monks-sound-enhancements | ", ...args);
 };
@@ -10,11 +12,17 @@ export let i18n = key => {
     return game.i18n.localize(key);
 };
 
+export let setting = key => {
+    return game.settings.get("monks-sound-enhancements", key);
+};
+
 export class MonksSoundEnhancements {
     static tracker = false;
     static tokenbar = null;
 
     static init() {
+        registerSettings();
+
         let onPlaylistDrop = async function (wrapped, ...args) {
             let event = args[0];
             let data;
@@ -285,6 +293,10 @@ export class MonksSoundEnhancements {
         ];
     }
 
+    static addStyling() {
+        $('#playlists').toggleClass('sound-enhancement', setting("change-style"));
+    }
+
     static closeConfig(app, html) {
         if (app._sounds) {
             for (let sound of Object.values(app._sounds)) {
@@ -432,3 +444,4 @@ Hooks.on("renderCompendium", MonksSoundEnhancements.updatePlaylistCompendium);
 Hooks.on("closePlaylistConfig", MonksSoundEnhancements.closeConfig)
 Hooks.on('renderPlaylistConfig', MonksSoundEnhancements.injectPlaylistTabs);
 Hooks.on('renderPlaylistSoundConfig', MonksSoundEnhancements.addSoundDrop);
+Hooks.on('renderPlaylistDirectory', MonksSoundEnhancements.addStyling);

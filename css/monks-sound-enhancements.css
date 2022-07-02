@@ -116,3 +116,28 @@
 .sheet .sound-sheet .items-list .item-list .item-control.action-play .fa-sync {
     animation: spin 4s linear infinite;
 }
+
+#playlists.sound-enhancement .playlist {
+    padding: 0px;
+    /*border-bottom: 4px solid #130027;*/
+}
+
+#playlists.sound-enhancement .playlist .playlist-header {
+    background: #130027;
+    padding: 8px 8px 8px 8px;
+}
+
+#playlists.sound-enhancement .directory-list li.sound {
+    padding: 2px 6px 2px 12px;
+    border: 1px solid transparent;
+}
+
+#playlists.sound-enhancement .directory-list li.sound.playing {
+    border: 1px solid #ff6400;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+#playlists.sound-enhancement.directory .directory-list .directory-item.document {
+    border-top: 1px solid #3a00ae;
+}

@@ -1,3 +1,7 @@
+# Version 1.0.3
+
+Added additional stylings to make it clearer what sound tracks are playing.
+
 # Version 1.0.2
 
 Looks like the refresh and delete issue were Foundry related.  It's been fixed in 9.268 so I'm removing it from my code.
