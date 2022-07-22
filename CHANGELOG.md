@@ -1,3 +1,7 @@
+# Version 1.0.4
+
+Adding v10 support.
+
 # Version 1.0.3
 
 Added additional stylings to make it clearer what sound tracks are playing.

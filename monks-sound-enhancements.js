@@ -31,11 +31,21 @@ export class MonksSoundEnhancements {
 
                 if (data.type == "PlaylistSound" && data.packId) {
                     const target = event.target.closest(".sound, .playlist");
-                    if (!target)
-                        return;
-
-                    const targetId = target.dataset.documentId || target.dataset.playlistId;
-                    const playlistTarget = game.playlists.get(targetId);
+                    let playlistTarget;
+                    if (!target) {
+                        if (data.packId) {
+                            let pack = game.packs.get(data.packId);
+                            if (!pack)
+                                return null;
+                            let playlist = await pack.getDocument(data.playlistId)
+                            playlistTarget = await Playlist.create({ name: playlist.name });
+                        } else {
+                            return null;
+                        }
+                    } else {
+                        const targetId = target.dataset.documentId || target.dataset.playlistId;
+                        playlistTarget = game.playlists.get(targetId);
+                    }
 
                     let pack = game.packs.get(data.packId);
                     const document = await pack.getDocument(data.playlistId);
@@ -56,7 +66,7 @@ export class MonksSoundEnhancements {
         } else {
             const oldOnDrop = PlaylistDirectory.prototype._onDrop;
             PlaylistDirectory.prototype._onDrop = function (event) {
-                return onPlaylistDrop.call(this, oldOnDrop.bind(this));
+                return onPlaylistDrop.call(this, oldOnDrop.bind(this), event);
             }
         }
 
@@ -90,7 +100,7 @@ export class MonksSoundEnhancements {
                         updateData.sounds = [];
                         for (let chk of checkedSounds) {
                             let id = chk.closest(".item").dataset.soundId;
-                            let sound = this.document.data.sounds.get(id);
+                            let sound = (isNewerVersion(game.version, "9.9999") ? this.document.sounds.get(id) : this.document.data.sounds.get(id));
                             if (sound) {
                                 updateData.sounds.push(sound.toObject());
                             }
@@ -136,7 +146,7 @@ export class MonksSoundEnhancements {
             compendium: !data.document.isEmbedded && data.document.compendium && data.document.constructor.canUserCreate(game.user)
         };
 
-        configData.sounds = app.object.data.sounds
+        configData.sounds = (isNewerVersion(game.version, "9.9999") ? app.object.sounds : app.object.data.sounds)
             .filter(s => !!s)
             .map(s => {
                 return {
@@ -326,7 +336,9 @@ export class MonksSoundEnhancements {
 
         if (app._sounds[target.dataset.soundId]) {
             if (app._sounds[target.dataset.soundId].playing) {
-                app._sounds[target.dataset.soundId].stop();
+                try {
+                    app._sounds[target.dataset.soundId].stop();
+                } catch { }
                 $(`.item[data-sound-id="${target.dataset.soundId}"] .action-play i`, app.element).attr("title", "Play Sound").addClass("fa-play").removeClass("fa-stop active");
             }
             else {
@@ -425,15 +437,16 @@ export class MonksSoundEnhancements {
 
             //fill in the information on the form with the sound information
             let soundObj = sound.toObject();
-            this.object.data.description = soundObj.description;
-            this.object.data.fade = soundObj.fade;
-            this.object.data.flags = soundObj.flags;
-            this.object.data.name = soundObj.name;
-            this.object.data.path = soundObj.path;
-            this.object.data.repeat = soundObj.repeat;
-            this.object.data.volume = soundObj.volume;
+            let dataObj = (isNewrVersion(game.version, "9.9999") ? this.object : this.object.data);
+            dataObj.description = soundObj.description;
+            dataObj.fade = soundObj.fade;
+            dataObj.flags = soundObj.flags;
+            dataObj.name = soundObj.name;
+            dataObj.path = soundObj.path;
+            dataObj.repeat = soundObj.repeat;
+            dataObj.volume = soundObj.volume;
             this.render();
-            window.setTimeout(() => { $('[name="name"]', this.element).val(this.object.data.name); }, 200);
+            window.setTimeout(() => { $('[name="name"]', this.element).val(dataObj.name); }, 200);
         }
     }
 }
