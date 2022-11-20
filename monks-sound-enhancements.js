@@ -1,3 +1,4 @@
+import { ActorSounds } from "./actor-sounds.js";
 import { registerSettings } from "./settings.js";
 
 export let debug = (...args) => {
@@ -123,9 +124,14 @@ export class MonksSoundEnhancements {
                 return onHeaderButtons.call(this, oldHeaderButtons.bind(this));
             }
         }
+
+        if (setting("actor-sounds"))
+            ActorSounds.init();
     }
 
     static ready() {
+        if (!(setting("actor-sounds") === "none" || setting("actor-sounds") === 'false'))
+            ActorSounds.injectSoundCtrls();
     }
 
     static async updatePlaylistCompendium(compendium, html, data) {
@@ -139,7 +145,8 @@ export class MonksSoundEnhancements {
         }*/
     }
 
-    static async injectPlaylistTabs(app, html, data) {
+    static async renderPlaylist(app, html, data) {
+        // Inject playlist tabs
         let configData = {
             pack: data.document.pack,
             playlist: data.document.id,
@@ -201,13 +208,21 @@ export class MonksSoundEnhancements {
         if (data.editable)
             ContextMenu.create(app, html, ".sound-list .item", MonksSoundEnhancements._getSoundContextOptions(), "SoundContext");
 
-        app.setPosition();
+        // Add the check box for hiding the sound names from the players
+        $('input[name="fade"]', html).parent().after(
+            $("<div>").addClass("form-group")
+                .append($("<label>").html("Hide sound names"))
+                .append($("<input>").attr("type", "checkbox").attr("name", "flags.monks-sound-enhancements.hide-name").prop("checked", getProperty(data.document, "flags.monks-sound-enhancements.hide-name")))
+        );
+
+        app.setPosition({ height: 'auto' });
         app._sounds = {};
 
         app._restoreScrollPositions(html);
     }
 
-    static async addSoundDrop(app, html, data) {
+    static async renderPlaylistSound(app, html, data) {
+        // Add drop
         let el = html[0];
 
         app.options.dragDrop = [{ dropSelector: "form" }];
@@ -217,6 +232,15 @@ export class MonksSoundEnhancements {
         } else
             el = el.parentElement;
         app._dragDrop.forEach(d => d.bind(el));
+
+        // Add the check box for hiding the sound names from the players
+        $('input[name="fade"]', html).parent().after(
+            $("<div>").addClass("form-group")
+                .append($("<label>").html("Hide name"))
+                .append($("<input>").attr("type", "checkbox").attr("name", "flags.monks-sound-enhancements.hide-name").prop("checked", getProperty(data.document, "flags.monks-sound-enhancements.hide-name")))
+        );
+
+        app.setPosition({ height: 'auto' });
     }
 
     static _getSoundContextOptions() {
@@ -303,8 +327,28 @@ export class MonksSoundEnhancements {
         ];
     }
 
-    static addStyling() {
+    static renderPlaylistDirectory(app, html, data, options) {
         $('#playlists').toggleClass('sound-enhancement', setting("change-style"));
+        $('#playlists-popout').toggleClass('sound-enhancement', setting("change-style"));
+
+        if (!game.user.isGM) {
+            $('.playlist-sounds li.sound', html).each(function () {
+                let playlistId = $(this).attr("data-playlist-id");
+                let soundId = $(this).attr("data-sound-id");
+
+                if (playlistId && soundId) {
+                    let playlist = app.documents.find(p => p._id == playlistId);
+                    if (playlist) {
+                        let sound = playlist.sounds.get(soundId);
+
+                        if (sound) {
+                            if (getProperty(playlist, "flags.monks-sound-enhancements.hide-name") || getProperty(sound, "flags.monks-sound-enhancements.hide-name"))
+                                $('.sound-name', this).html("-");
+                        }
+                    }
+                }
+            });
+        }
     }
 
     static closeConfig(app, html) {
@@ -455,6 +499,6 @@ Hooks.on("init", MonksSoundEnhancements.init);
 Hooks.on("ready", MonksSoundEnhancements.ready);
 Hooks.on("renderCompendium", MonksSoundEnhancements.updatePlaylistCompendium);
 Hooks.on("closePlaylistConfig", MonksSoundEnhancements.closeConfig)
-Hooks.on('renderPlaylistConfig', MonksSoundEnhancements.injectPlaylistTabs);
-Hooks.on('renderPlaylistSoundConfig', MonksSoundEnhancements.addSoundDrop);
-Hooks.on('renderPlaylistDirectory', MonksSoundEnhancements.addStyling);
+Hooks.on('renderPlaylistConfig', MonksSoundEnhancements.renderPlaylist);
+Hooks.on('renderPlaylistSoundConfig', MonksSoundEnhancements.renderPlaylistSound);
+Hooks.on('renderPlaylistDirectory', MonksSoundEnhancements.renderPlaylistDirectory);

@@ -1,5 +1,14 @@
 {
   "MonksSoundEnhancements.Add": "Add",
-  "MonksEnhancedJournal.change-style.name": "Change Playlist Style",
-  "MonksEnhancedJournal.change-style.hint": "Add additional styles to make it a little more obvious what tracks are playing"
+  "MonksSoundEnhancements.change-style.name": "Change Playlist Style",
+  "MonksSoundEnhancements.change-style.hint": "Add additional styles to make it a little more obvious what tracks are playing",
+
+  "MonksSoundEnhancements.ActorSound": "Actor Sound",
+  "MonksSoundEnhancements.ItemSound": "Item Sound",
+  "MonksSoundEnhancements.AudioFile": "Audio File",
+  "MonksSoundEnhancements.Volume": "Volume",
+
+  "MonksSoundEnhancements.actorsoundsoptions.none": "None",
+  "MonksSoundEnhancements.actorsoundsoptions.npc": "NPCs",
+  "MonksSoundEnhancements.actorsoundsoptions.everyone": "Everyone"
 }

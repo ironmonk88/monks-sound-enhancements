@@ -1,3 +1,13 @@
+# Version 10.1
+
+Moved Actor sounds from Monk's Little Details to Sound Enhancements.
+
+Added sound enhancements to Items, so you can have a musical instrument play a sound effect.
+
+Added styling to the popped out sound directory
+
+Added the option to hide the playlist name from players
+
 # Version 1.0.4
 
 Adding v10 support.
