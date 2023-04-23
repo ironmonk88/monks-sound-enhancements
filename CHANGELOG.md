@@ -1,3 +1,38 @@
+# Version 10.02
+
+Changed the icons in the token HUD to be a little more pleasing to the eye.
+
+Changed to have the actor sound attached to the token document rather than the token itself.
+*NOTE* This will also affect any macros that use tokens to play the actor sound effect.  They'll need to reference the token document instead.
+
+Added a global Sound Effects volume slider to handle all sounds that don't quite fit into the core volume sliders.
+
+Added an API for sound enhancements to allow other modules to add a sound effect to the currently playing list. (Expect Enhanced Journals and Active Tiles to begin using it on their next updates)
+
+Fixed issues with loading actor sound effects, allowed the option to specify what you want to do, rather than just toggling the sound being played.
+
+Fixed issues with actor sounds being stopped instead of just ending naturally.
+
+Added the option to expand and collapse the currently playing.  And changed the pin icon to an actual pin.
+
+Excluded syrinscape sounds from the sound enhancements to the edit playlist sound config.
+
+Allow sounds to be added to a compendium playlist, provided it's unlocked.
+
+Showed on the play list when sound names are hidden from players.
+
+Added the option to hide entire playlist from the players when they have a song currently playing from them.  Turning this on will automatically hide the name od the sound file in the currently playing.
+
+Hid the sound controls from players that can't control sounds, since there's no reason for them to be there.
+
+Updated the action to drop a playlist on the Hotbar.  Instead of creating a macro that opens the playlist config, it will now generate a Macro to start the playlist or playlist sound playing.
+
+Added the duration to the sound listing when editing the playlist.
+
+Added context menu items to hide and reveal sounds and playlist.
+
+Added the option to play an actor sound when it's their turn in combat.
+
 # Version 10.1
 
 Moved Actor sounds from Monk's Little Details to Sound Enhancements.

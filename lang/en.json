@@ -1,8 +1,17 @@
 {
-  "MonksSoundEnhancements.Add": "Add",
   "MonksSoundEnhancements.change-style.name": "Change Playlist Style",
   "MonksSoundEnhancements.change-style.hint": "Add additional styles to make it a little more obvious what tracks are playing",
+  "MonksSoundEnhancements.actor-sounds.name": "Actor Sound Effects",
+  "MonksSoundEnhancements.actor-sounds.hint": "Add a button to the character sheet and the TokenHUD to play a sound effect.",
+  "MonksSoundEnhancements.playlist-hide-names.name": "Default hide names",
+  "MonksSoundEnhancements.playlist-hide-names.hint": "A hidden playlist will automatically obscure sound names",
+  "MonksSoundEnhancements.playsound-combat.name": "Combat sound",
+  "MonksSoundEnhancements.playsound-combat.hint": "Play actor sound when it's their turn in combat",
 
+  "MonksSoundEnhancements.Add": "Add",
+  "MonksSoundEnhancements.Delete": "Delete",
+  "MonksSoundEnhancements.HideSoundNames": "Hide sound names from players",
+  "MonksSoundEnhancements.HidePlaylist": "Hide Playlist from players",
   "MonksSoundEnhancements.ActorSound": "Actor Sound",
   "MonksSoundEnhancements.ItemSound": "Item Sound",
   "MonksSoundEnhancements.AudioFile": "Audio File",

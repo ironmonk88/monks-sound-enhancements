@@ -10,27 +10,27 @@ export class ActorSounds {
                     await app.object.actor.setFlag("monks-sound-enhancements", "sound-effect", soundEffect);
             }
             if (soundEffect != undefined) {
-                let icon = 'volumeup.svg';
-                if (app.object?.soundeffect && app.object?.soundeffect?.playing)
-                    icon = 'stop.svg';
+                let icon = 'speaker-on.png';
+                if (app.object?.document.soundeffect && app.object?.document.soundeffect?.playing)
+                    icon = 'speaker-off.png';
 
                 $('.col.right', html).append(
                     $('<div>').addClass('control-icon sound-effect')
                         .append(`<img src="modules/monks-sound-enhancements/icons/${icon}" width="36" height="36" title="Play Sound Effect">`)
-                        .click(app.object.playSound.bind(app.object)));
+                        .click(ActorSounds.ActorPlay.bind(this, app.object.document)));
             }
         });
 
-        Hooks.on("globalInterfaceVolumeChanged", (volume) => {
-            for (let token of canvas.tokens.placeables) {
-                if (token.soundeffect) {
-                    token.soundeffect.volume = (token.soundeffect._mldvolume ?? 1) * volume;
+        Hooks.on("globalSoundEffectVolumeChanged", (volume) => {
+            for (let sound of Object.values(MonksSoundEnhancements.sounds)) {
+                if (sound.sound?.playing) {
+                    sound.sound.volume = (sound.sound.effectiveVolume ?? 1) * volume;
                 }
             }
         });
 
-        Token.prototype.playSound = function() {
-            ActorSounds.loadSoundEffect(this);
+        TokenDocument.prototype.playSound = function(options) {
+            ActorSounds.loadSoundEffect(this, options);
         }
     }
 
@@ -143,6 +143,19 @@ export class ActorSounds {
         return fp.browse();
     }*/
 
+    static async ActorPlay(doc, event) {
+        let result = await ActorSounds.loadSoundEffect(doc, {
+            callback: () => {
+                //+++ need to make sure this is the same TokenHUD that started the sound, in case it's a long sound file
+                $(`#token-hud .control-icon.sound-effect img`).attr('src', 'modules/monks-sound-enhancements/icons/speaker-on.png');
+            }
+        }, event);
+        if (result == "stop")
+            $(`#token-hud .control-icon.sound-effect img`).attr('src', 'modules/monks-sound-enhancements/icons/speaker-on.png');
+        else
+            $(`#token-hud .control-icon.sound-effect img`).attr('src', 'modules/monks-sound-enhancements/icons/speaker-off.png');
+    }
+
     static async ItemPlay(item, event) {
         let that = this;
         let result = await ActorSounds.loadSoundEffect(item, {
@@ -156,7 +169,7 @@ export class ActorSounds {
             $(`.item[data-item-id="${item._id}"] .item-sound i`, this.element).addClass("fa-stop").removeClass("fa-play");
     }
 
-    static async loadSoundEffect(token, options, event) {
+    static async loadSoundEffect(token, options = {}, event) {
         let actor = token.actor || token;
 
         if (!actor)
@@ -165,14 +178,17 @@ export class ActorSounds {
         if (event != undefined)
             event.preventDefault;
 
-        if (token.soundeffect) {
+        if (token.soundeffect && options.action != "play") {
             if (token.soundeffect?.playing) {
-                token.soundeffect.stop();
-                game.socket.emit("stopAudio", { src: token.soundeffect.src }); //+++ this isn't a function with the new AudioHelper
-            }
-            delete token.soundeffect;
+                token.soundeffect.fade(0, { duration: 250 }).then(() => {
+                    token.soundeffect?.stop();
+                    delete token.soundeffect;
+                });
+            } else 
+                delete token.soundeffect;
             return "stop";
-        } else {
+        }
+        if (!token.soundeffect && options.action != "stop") {
             let volume = getProperty(actor, "flags.monks-sound-enhancements.volume");
             if (!volume) {
                 volume = getProperty(actor, "flags.monks-little-details.volume");
@@ -197,16 +213,25 @@ export class ActorSounds {
                 const audiofile = audiofiles[Math.floor(Math.random() * audiofiles.length)];
                 ActorSounds.playSoundEffect(audiofile, volume).then((sound) => {
                     if (sound) {
+                        sound.name = token.name;
+                        MonksSoundEnhancements.addSoundEffect(sound);
                         token.soundeffect = sound;
+                        token.soundeffect.on("stop", () => {
+                            MonksSoundEnhancements.emit("stop", { uuid: token.uuid });
+                            delete token.soundeffect;
+                            if (options?.callback)
+                                options.callback();
+                        });
                         token.soundeffect.on("end", () => {
                             delete token.soundeffect;
                             if (options?.callback)
                                 options.callback();
                         });
-                        token.soundeffect._mldvolume = volume;
+                        token.soundeffect.effectiveVolume = volume;
                         return sound;
                     }
                 });
+                MonksSoundEnhancements.emit("play", { uuid: token.uuid, audiofile, volume });
             }
             return "play";
         }
@@ -216,7 +241,7 @@ export class ActorSounds {
         if (!audiofile)
             return new Promise();   //just return a blank promise so anything waiting can connect a then
 
-        return AudioHelper.play({ src: audiofile, volume: (volume ?? 1) }, true);
+        return AudioHelper.play({ src: audiofile, volume: (volume ?? 1) });
     }
 
     static async getTokenSounds(audiofile, cache) {
@@ -328,7 +353,7 @@ export class ActorSoundDialog extends FormApplication {
     /** @override */
     async _updateObject(event, formData) {
         let audiofile = formData.audiofile;
-        if (!audiofile.startsWith("/") && !audiofile.startsWith("http"))
+        if (audiofile && !audiofile.startsWith("/") && !audiofile.startsWith("http"))
             audiofile = "/" + audiofile;
 
         this.object.setFlag('monks-sound-enhancements', 'sound-effect', audiofile);
@@ -386,8 +411,8 @@ Hooks.on("setupTileActions", (app) => {
 
             let entities = await game.MonksActiveTiles.getEntities(args);
             for (let entity of entities) {
-                if (entity instanceof TokenDocument && entity._object) {
-                    entity._object.playSound();
+                if (entity instanceof TokenDocument) {
+                    entity.playSound();
                 }
             }
         },

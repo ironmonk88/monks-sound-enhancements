@@ -32,4 +32,38 @@ export const registerSettings = function () {
 		type: String,
 		onChange: debouncedReload
 	});
+
+	game.settings.register(modulename, "playsound-combat", {
+		name: i18n("MonksSoundEnhancements.playsound-combat.name"),
+		hint: i18n("MonksSoundEnhancements.playsound-combat.hint"),
+		scope: "world",
+		config: true,
+		default: false,
+		type: Boolean,
+		onChange: () => {
+			MonksSoundEnhancements.emit("render");
+		}
+	});
+
+	game.settings.register(modulename, "playlist-hide-names", {
+		name: i18n("MonksSoundEnhancements.playlist-hide-names.name"),
+		hint: i18n("MonksSoundEnhancements.playlist-hide-names.hint"),
+		scope: "world",
+		config: true,
+		default: true,
+		type: Boolean,
+		onChange: () => {
+			MonksSoundEnhancements.emit("render");
+        }
+	});
+
+	game.settings.register("core", "globalSoundEffectVolume", {
+		name: "Global Sound Effects Volume",
+		hint: "Define a global sound effect volume modifier",
+		scope: "client",
+		config: false,
+		default: 0.5,
+		type: Number,
+		onChange: v => game.audio._onChangeGlobalVolume("globalSoundEffectVolume", v)
+	});
 };

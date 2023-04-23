@@ -181,3 +181,15 @@
     flex: 0 0 15px;
     padding-left: 2px;
 }
+
+.playlist.document.player-hidden {
+    display:none !important;
+}
+
+.playlists-sidebar .sound-control[data-mse-action="sound-stop"] {
+    color: var(--color-text-hyperlink);
+}
+
+.playlists-sidebar .sound-effect h4 {
+    color: yellow;
+}
