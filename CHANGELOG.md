@@ -1,3 +1,9 @@
+# Version 10.03
+
+Fixed support for changes to Active Tiles.
+
+Fixed issues with changing the play and stop buttons to reflect the state of the audio file.
+
 # Version 10.02
 
 Changed the icons in the token HUD to be a little more pleasing to the eye.

@@ -401,7 +401,7 @@ Hooks.on("setupTileActions", (app) => {
                 name: "Select Entity",
                 type: "select",
                 subtype: "entity",
-                options: { showToken: true, showWithin: true, showPlayers: true, showPrevious: true, showTagger: true },
+                options: { show : ['token', 'within', 'players', 'previous', 'tagger'] },
                 restrict: (entity) => { return (entity instanceof Token); },
             }
         ],

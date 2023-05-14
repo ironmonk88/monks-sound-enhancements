@@ -685,12 +685,17 @@ export class MonksSoundEnhancements {
             $(`.item[data-sound-id="${target.dataset.soundId}"] .action-play i`, app.element).attr("title", "Loading Sound").removeClass("fa-play").addClass("fa-sync");
             app._sounds[target.dataset.soundId] = 'loading';
             AudioHelper.play({ src: sound.sound.src, volume: 1, loop: false }, false).then((sound) => {
+                sound.on("stop", () => {
+                    $(`.item[data-sound-id="${target.dataset.soundId}"] .action-play i`, app.element).attr("title", "Play Sound").addClass("fa-play").removeClass("fa-sync fa-stop active");
+                });
+                sound.on("end", () => {
+                    $(`.item[data-sound-id="${target.dataset.soundId}"] .action-play i`, app.element).attr("title", "Play Sound").addClass("fa-play").removeClass("fa-sync fa-stop active");
+                });
                 if (app._sounds[target.dataset.soundId] == "stop") {
                     app._sounds[target.dataset.soundId] = sound;
                     try {
                         sound.stop();
                     } catch { }
-                    $(`.item[data-sound-id="${target.dataset.soundId}"] .action-play i`, app.element).attr("title", "Play Sound").addClass("fa-play").removeClass("fa-sync");
                 } else {
                     app._sounds[target.dataset.soundId] = sound;
                     $(`.item[data-sound-id="${target.dataset.soundId}"] .action-play i`, app.element).attr("title", "Stop Sound").removeClass("fa-sync").addClass("fa-stop active");
