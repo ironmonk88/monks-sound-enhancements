@@ -1,3 +1,13 @@
+# Version 11.01
+
+Added support for v11
+
+Fixed issue with actor sounds not initiating play at the correct volume.
+
+Fixed issue where players weren't able to adjust the volume of sound effects
+
+Fixed issue with hiding and revealing playlists using the context menu
+
 # Version 10.03
 
 Fixed support for changes to Active Tiles.

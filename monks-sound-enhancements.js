@@ -65,6 +65,7 @@ export class MonksSoundEnhancements {
                                 if (sound) {
                                     token.soundeffect = sound;
                                     token.soundeffect.effectiveVolume = data.volume;
+                                    MonksSoundEnhancements.addSoundEffect(sound);
                                     return sound;
                                 }
                             });
@@ -375,7 +376,7 @@ export class MonksSoundEnhancements {
         // Add the check box for hiding the sound names from the players
         $('input[name="fade"]', html).parent().after(
             $("<div>").addClass("form-group")
-                .append($("<label>").html(i18n("MonksSoundEnhancements.HidePlaylist")))
+                .append($("<label>").html(i18n("MonksSoundEnhancements.HidePlaylistHint")))
                 .append($("<input>").attr("type", "checkbox").attr("name", "flags.monks-sound-enhancements.hide-playlist").prop("checked", getProperty(data.document, "flags.monks-sound-enhancements.hide-playlist")))
         );
 
@@ -946,31 +947,45 @@ Hooks.on('hotbarDrop', MonksSoundEnhancements.hotbarDrop);
 Hooks.on("getPlaylistDirectoryEntryContext", (html, options, app) => {
     options.unshift(
         {
-            name: "Reveal playlist",
+            name: i18n("MonksSoundEnhancements.RevealPlaylist"),
             icon: '<i class="fas fa-eye"></i>',
             condition: li => {
-                let playlist = game.playlists.get(li.data("documentId"));
-                return game.user.isGM && getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist");
+                let id = li[0].closest(".playlist").dataset.documentId;
+                let playlist = game.playlists.get(id);
+                if (playlist)
+                    return game.user.isGM && getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist");
+                else
+                    return false;
             },
             callback: async (li) => {
-                let playlist = game.playlists.get(li.data("documentId"));
-                let result = await playlist.update({ "flags.monks-sound-enhancements.hide-playlist": false });
-                playlist.collection.render();
-                return result;
+                let id = li[0].closest(".playlist").dataset.documentId;
+                let playlist = game.playlists.get(id);
+                if (playlist) {
+                    let result = await playlist.update({ "flags.monks-sound-enhancements.hide-playlist": false });
+                    playlist.collection.render();
+                    return result;
+                }
             }
         },
         {
-            name: "Hide playlist",
+            name: i18n("MonksSoundEnhancements.HidePlaylist"),
             icon: '<i class="fas fa-eye-slash"></i>',
             condition: li => {
-                let playlist = game.playlists.get(li.data("documentId"));
-                return game.user.isGM && !getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist");
+                let id = li[0].closest(".playlist").dataset.documentId;
+                let playlist = game.playlists.get(id);
+                if (playlist)
+                    return game.user.isGM && !getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist");
+                else
+                    return false;
             },
             callback: async (li) => {
-                let playlist = game.playlists.get(li.data("documentId"));
-                let result = await playlist.update({ "flags.monks-sound-enhancements.hide-playlist": true });
-                playlist.collection.render();
-                return result;
+                let id = li[0].closest(".playlist").dataset.documentId;
+                let playlist = game.playlists.get(id);
+                if (playlist) {
+                    let result = await playlist.update({ "flags.monks-sound-enhancements.hide-playlist": true });
+                    playlist.collection.render();
+                    return result;
+                }
             }
         }
     );
@@ -979,7 +994,7 @@ Hooks.on("getPlaylistDirectoryEntryContext", (html, options, app) => {
 Hooks.on("getPlaylistDirectorySoundContext", (html, options, app) => {
     options.unshift(
         {
-            name: "Reveal sound name",
+            name: i18n("MonksSoundEnhancements.RevealSoundName"),
             icon: '<i class="fas fa-eye"></i>',
             condition: li => {
                 let playlist = game.playlists.get(li.data("playlistId"));
@@ -993,7 +1008,7 @@ Hooks.on("getPlaylistDirectorySoundContext", (html, options, app) => {
             }
         },
         {
-            name: "Hide sound name",
+            name: i18n("MonksSoundEnhancements.HideSoundName"),
             icon: '<i class="fas fa-eye-slash"></i>',
             condition: li => {
                 let playlist = game.playlists.get(li.data("playlistId"));
@@ -1014,9 +1029,17 @@ Hooks.on("updateCombat", (combat, delta) => {
         if (combat.previous?.combatantId) {
             let previous = combat.combatants.get(combat.previous.combatantId);
             if (previous) {
-                previous.token.playSound({action: "stop"});
+                previous.token.playSound({ action: "stop" });
             }
         }
         combat.combatant.token.playSound();
     }
-})
+});
+
+Hooks.on("globalSoundEffectVolumeChanged", (volume) => {
+    for (let sound of Object.values(MonksSoundEnhancements.sounds)) {
+        if (sound.sound?.playing) {
+            sound.sound.volume = (sound.sound.effectiveVolume ?? 1) * volume;
+        }
+    }
+});

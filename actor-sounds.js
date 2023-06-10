@@ -21,14 +21,6 @@ export class ActorSounds {
             }
         });
 
-        Hooks.on("globalSoundEffectVolumeChanged", (volume) => {
-            for (let sound of Object.values(MonksSoundEnhancements.sounds)) {
-                if (sound.sound?.playing) {
-                    sound.sound.volume = (sound.sound.effectiveVolume ?? 1) * volume;
-                }
-            }
-        });
-
         TokenDocument.prototype.playSound = function(options) {
             ActorSounds.loadSoundEffect(this, options);
         }
@@ -211,7 +203,7 @@ export class ActorSounds {
             //audiofiles = audiofiles.filter(i => (audiofiles.length === 1) || !(i === this._lastWildcard));
             if (audiofiles?.length > 0) {
                 const audiofile = audiofiles[Math.floor(Math.random() * audiofiles.length)];
-                ActorSounds.playSoundEffect(audiofile, volume).then((sound) => {
+                ActorSounds.playSoundEffect(audiofile, volume * game.settings.get("core", "globalSoundEffectVolume")).then((sound) => {
                     if (sound) {
                         sound.name = token.name;
                         MonksSoundEnhancements.addSoundEffect(sound);
