@@ -1,3 +1,7 @@
+# Version 11.03
+
+Adding support for Multiple Document Selection
+
 # Version 11.02
 
 Added support for v11

@@ -545,7 +545,7 @@ export class MonksSoundEnhancements {
             }
         });
         if (game.user.isGM) {
-            $('.playlist-sounds li.sound h4', html).click(MonksSoundEnhancements.selectPlaylistSound.bind(this));
+            $('.playlist-sounds li.sound h4', html).on("click", MonksSoundEnhancements.selectPlaylistSound.bind(this));
         }
 
         $('#currently-playing .playlist-sounds li.sound[data-playlist-id="monks-sound-enhancements"]').each(function() {
@@ -612,6 +612,9 @@ export class MonksSoundEnhancements {
         const playlist = game.playlists.get(playlistId);
         const sound = playlist?.sounds?.get(soundId);
         if (sound) {
+            const allowed = Hooks.call("clickPlaylistSound", sound, game.user.id);
+            if (!allowed) return;
+
             if (!sound.playing)
                 playlist.playSound(sound);
             else
