@@ -1,6 +1,7 @@
 ﻿import { ActorSounds } from "./actor-sounds.js";
 import { registerSettings } from "./settings.js";
 import { MonksSoundEnhancementsAPI } from "./monks-sound-enhancements-api.js";
+import { soundfileinit } from "./plugins/soundfile.plugin.js"
 
 export let debug = (...args) => {
     if (debugEnabled > 1) console.log("DEBUG: monks-sound-enhancements | ", ...args);
@@ -85,6 +86,8 @@ export class MonksSoundEnhancements {
         game.MonksSoundEnhancements = MonksSoundEnhancementsAPI;
 
         MonksSoundEnhancements.SOCKET = "module.monks-sound-enhancements";
+
+        CONFIG.TextEditor.enrichers.push({ id: 'MonksSoundEnhancementsSound', pattern: new RegExp(`@(Sound)\\[([^\\]]+)\\](?:{([^}]+)})?`, 'g'), enricher: MonksSoundEnhancements._createSoundLink });
 
         try {
             Object.defineProperty(User.prototype, "isTheGM", {
@@ -232,8 +235,61 @@ export class MonksSoundEnhancements {
             ActorSounds.init();
     }
 
+    static _createSoundLink(match) {
+        let [type, options, name] = match.slice(1, 5);
+        let [target, ...props] = options.split(' ');
+        const data = {
+            cls: ["sound-link"],
+            icon: 'fas fa-volume-up',
+            dataset: {},
+            name: name
+        };
+
+        data.name = data.name || doc.name || target;
+        data.dataset = {
+            src: target
+        };
+        if (props[0] == "allowpause")
+            data.dataset.allowpause = true;
+
+        const a = document.createElement("a");
+        a.classList.add(...data.cls);
+        a.draggable = true;
+        for (let [k, v] of Object.entries(data.dataset)) {
+            a.dataset[k] = v;
+        }
+        a.innerHTML = `<i class="${data.icon}"></i>${data.name}`;
+
+        return a;
+    }
+
+    static async _onClickSoundLink(event) {
+        event.preventDefault();
+        const a = event.currentTarget;
+
+        let audio = a.nextElementSibling;
+        if (!audio || audio.tagName != "AUDIO") {
+            audio = document.createElement("audio");
+            audio.src = a.dataset.src;
+            audio.volume = game.settings.get("core", "globalSoundEffectVolume");
+            a.insertAdjacentElement("afterend", audio);
+        }
+
+        if (audio) {
+            if (audio.paused)
+                audio.play();
+            else {
+                audio.pause();
+                if (a.dataset.allowpause !== "true")
+                    audio.currentTime = 0;
+            }
+        }
+    }
+
     static ready() {
         game.socket.on(MonksSoundEnhancements.SOCKET, MonksSoundEnhancements.onMessage);
+
+        tinyMCE.PluginManager.add('soundeffect', soundfileinit);
 
         ui.playlists._currentExpanded = true;
 
@@ -1032,10 +1088,10 @@ Hooks.on("updateCombat", (combat, delta) => {
         if (combat.previous?.combatantId) {
             let previous = combat.combatants.get(combat.previous.combatantId);
             if (previous) {
-                previous.token.playSound({ action: "stop" });
+                previous.token?.playSound({ action: "stop" });
             }
         }
-        combat.combatant.token.playSound();
+        combat.combatant.token?.playSound();
     }
 });
 
@@ -1045,4 +1101,8 @@ Hooks.on("globalSoundEffectVolumeChanged", (volume) => {
             sound.sound.volume = (sound.sound.effectiveVolume ?? 1) * volume;
         }
     }
+});
+
+Hooks.on("renderJournalPageSheet", (sheet, html, data) => {
+    $("a.sound-link", html).click(MonksSoundEnhancements._onClickSoundLink.bind(sheet));
 });

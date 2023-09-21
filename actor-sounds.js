@@ -162,7 +162,7 @@ export class ActorSounds {
     }
 
     static async loadSoundEffect(token, options = {}, event) {
-        let actor = token.actor || token;
+        let actor = token instanceof Item ? token : token.actor || token;
 
         if (!actor)
             return;

@@ -193,3 +193,12 @@
 .playlists-sidebar .sound-effect h4 {
     color: yellow;
 }
+
+a.sound-link {
+    background: #ddd;
+    padding: 1px 4px;
+    border: 1px solid #4b4a44;
+    border-radius: 2px;
+    white-space: nowrap;
+    word-break: break-all;
+}

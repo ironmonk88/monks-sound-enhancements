@@ -1,3 +1,11 @@
+# Version 11.04
+
+Fixed issue with sound files attached to an Items
+
+Adding a Sound embedded link to journal entries to allow for playing a sound effect when clicked.  `@Sound[filepath allowpause]{displayed text}
+
+Fixed issue for playing token sound effects if the combatant has no token.
+
 # Version 11.03
 
 Adding support for Multiple Document Selection

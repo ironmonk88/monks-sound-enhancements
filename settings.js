@@ -30,7 +30,7 @@ export const registerSettings = function () {
 		default: "npc",
 		choices: actorsoundsoptions,
 		type: String,
-		onChange: debouncedReload
+		requiresReload: true
 	});
 
 	game.settings.register(modulename, "playsound-combat", {
