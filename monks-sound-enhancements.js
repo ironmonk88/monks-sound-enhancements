@@ -1084,6 +1084,9 @@ Hooks.on("getPlaylistDirectorySoundContext", (html, options, app) => {
 });
 
 Hooks.on("updateCombat", (combat, delta) => {
+    if (combat.round == combat._mse_round && combat.combatant?.id == combat._mse_turn)
+        return;
+
     if (setting("playsound-combat") && game.user.isTheGM && combat && combat.started === true) {
         if (combat.previous?.combatantId) {
             let previous = combat.combatants.get(combat.previous.combatantId);
@@ -1093,6 +1096,9 @@ Hooks.on("updateCombat", (combat, delta) => {
         }
         combat.combatant.token?.playSound();
     }
+
+    combat._mse_round = combat.round;
+    combat._mse_turn = combat.combatant?.id;
 });
 
 Hooks.on("globalSoundEffectVolumeChanged", (volume) => {

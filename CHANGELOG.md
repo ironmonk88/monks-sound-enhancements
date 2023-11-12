@@ -1,3 +1,7 @@
+# Version 11.05
+
+Fixed issue where actor sound effect plays any time a combat updates
+
 # Version 11.04
 
 Fixed issue with sound files attached to an Items
