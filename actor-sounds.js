@@ -3,6 +3,8 @@ import { MonksSoundEnhancements, i18n, log, setting } from "./monks-sound-enhanc
 export class ActorSounds {
     static init() {
         Hooks.on('renderTokenHUD', async (app, html, options) => {
+            if (setting("actor-sounds") == "none" || (setting("actor-sounds") == "npc" && app.object.actor?.type == "character")) return;
+
             let soundEffect = getProperty(app.object, "actor.flags.monks-sound-enhancements.sound-effect");
             if (!soundEffect) {
                 soundEffect = getProperty(app.object, "actor.flags.monks-little-details.sound-effect");
@@ -27,10 +29,10 @@ export class ActorSounds {
     }
 
     static injectSoundCtrls() {
-        if (!(setting("actor-sounds") === "none" || setting("actor-sounds") === 'false')) {
+        if (setting("actor-sounds") !== "none") {
             let sheetNames = ["ActorSheet"];
 
-            if (setting("actor-sounds") === "npc" || setting("actor-sounds") === 'true') {
+            if (setting("actor-sounds") === "npc") {
                 let npcObject;
                 if (game.system.id == 'ds4') {
                     npcObject = CONFIG.Actor.sheetClasses.creature;
@@ -78,44 +80,46 @@ export class ActorSounds {
             });
         }
 
-        Hooks.on("renderItemSheet", (app, html, data) => {
-            // only for GMs or the owner of this npc
-            if (!app.object.isOwner) return;
+        if (setting("item-sounds") !== "none") {
+            Hooks.on("renderItemSheet", (app, html, data) => {
+                // only for GMs or the owner of this npc
+                if (!app.object.isOwner) return;
 
-            // don't add the button multiple times
-            if ($(html).find("#mseItemSound").length > 0) return;
+                // don't add the button multiple times
+                if ($(html).find("#mseItemSound").length > 0) return;
 
-            let soundEffect = getProperty(app.document, "flags.monks-sound-enhancements.sound-effect");
+                let soundEffect = getProperty(app.document, "flags.monks-sound-enhancements.sound-effect");
 
-            let hasSound = soundEffect != undefined;
+                let hasSound = soundEffect != undefined;
 
-            let button = $('<button>')
-                .attr('type', "button")
-                .attr('id', "mseItemSound")
-                .toggleClass('loaded', hasSound)
-                .html('<i class="fas fa-volume-up"></i>')
-                .click(ActorSounds.showDialog.bind(app, "item"));
+                let button = $('<button>')
+                    .attr('type', "button")
+                    .attr('id', "mseItemSound")
+                    .toggleClass('loaded', hasSound)
+                    .html('<i class="fas fa-volume-up"></i>')
+                    .click(ActorSounds.showDialog.bind(app, "item"));
 
-            let wrap = $('<div class="mseItemName"></div>');
-            $(html).find("input[name='name'],h1[data-field-key='name']").wrap(wrap);
-            $(html).find("input[name='name'],h1[data-field-key='name']").parent().prepend(button);
-        });
+                let wrap = $('<div class="mseItemName"></div>');
+                $(html).find("input[name='name'],h1[data-field-key='name']").wrap(wrap);
+                $(html).find("input[name='name'],h1[data-field-key='name']").parent().prepend(button);
+            });
 
-        Hooks.on("closeItemSheet", (app, html, data) => {
-            delete app.soundcontext;
-        });
+            Hooks.on("closeItemSheet", (app, html, data) => {
+                delete app.soundcontext;
+            });
 
-        Hooks.on("renderActorSheet", (app, html, data) => {
-            $('.inventory-list .item-list .item').each(function () {
-                let itemId = $(this).attr('data-item-id');
-                let item = data.items.find(i => i._id == itemId);
+            Hooks.on("renderActorSheet", (app, html, data) => {
+                $('.inventory-list .item-list .item,.inventory-list .items > li').each(function () {
+                    let itemId = $(this).attr('data-item-id');
+                    let item = data.items.find(i => i._id == itemId);
 
-                let soundEffect = getProperty(item, "flags.monks-sound-enhancements.sound-effect");
-                if (soundEffect) {
-                    $('.item-name h4', this).before($("<a>").addClass('item-sound').html('<i class="fas fa-play"></i>').on("click", ActorSounds.ItemPlay.bind(app, item)));
-                }
-            })
-        });
+                    let soundEffect = getProperty(item, "flags.monks-sound-enhancements.sound-effect");
+                    if (soundEffect) {
+                        $('.item-name h4', this).before($("<a>").addClass('item-sound').html('<i class="fas fa-play"></i>').on("click", ActorSounds.ItemPlay.bind(app, item)));
+                    }
+                })
+            });
+        }
     }
 
     /*

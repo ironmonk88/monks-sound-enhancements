@@ -56,27 +56,34 @@ export class MonksSoundEnhancements {
                             delete token.soundeffect;
                     }
                 } catch { }
-            }
+            } break;
             case 'play': {
                 if (game.user.id != data.senderId) {
                     try {
                         let token = fromUuidSync(data.uuid);
                         if (!token.soundeffect) {
-                            ActorSounds.playSoundEffect(data.audiofile, data.volume).then((sound) => {
+                            ActorSounds.playSoundEffect(data.audiofile, data.volume * game.settings.get("core", "globalSoundEffectVolume")).then((sound) => {
                                 if (sound) {
-                                    token.soundeffect = sound;
-                                    token.soundeffect.effectiveVolume = data.volume;
+                                    sound.name = token.name;
                                     MonksSoundEnhancements.addSoundEffect(sound);
+                                    token.soundeffect = sound;
+                                    token.soundeffect.on("stop", () => {
+                                        delete token.soundeffect;
+                                    });
+                                    token.soundeffect.on("end", () => {
+                                        delete token.soundeffect;
+                                    });
+                                    token.soundeffect.effectiveVolume = data.volume;
                                     return sound;
                                 }
                             });
                         }
                     } catch { }
                 }
-            }
+            } break;
             case 'render': {
                 game.playlists.render();
-            }
+            } break;
         }
     }
 
@@ -97,35 +104,49 @@ export class MonksSoundEnhancements {
             });
         } catch { }
 
-        let onPlaylistDrop = async function (wrapped, ...args) {
+        if (setting("actor-sounds") === 'false') game.settings.set("monks-sound-enhancements", "actor-sounds", "none");
+        if (setting("actor-sounds") === 'true') game.settings.set("monks-sound-enhancements", "actor-sounds", "npc");
+
+        patchFunc("PlaylistDirectory.prototype._onDrop", async function (wrapped, ...args) {
             let event = args[0];
             let data;
             try {
                 data = JSON.parse(event.dataTransfer.getData('text/plain'));
 
-                if (data.type == "PlaylistSound" && data.packId) {
-                    const target = event.target.closest(".sound, .playlist");
-                    let playlistTarget;
-                    if (!target) {
-                        if (data.packId) {
-                            let pack = game.packs.get(data.packId);
-                            if (!pack)
+                if (data.type == "PlaylistSound") {
+                    if (data.packId) {
+                        const target = event.target.closest(".sound, .playlist");
+                        let playlistTarget;
+                        if (!target) {
+                            if (data.packId) {
+                                let pack = game.packs.get(data.packId);
+                                if (!pack)
+                                    return null;
+                                let playlist = await pack.getDocument(data.playlistId)
+                                playlistTarget = await Playlist.create({ name: playlist.name });
+                            } else {
                                 return null;
-                            let playlist = await pack.getDocument(data.playlistId)
-                            playlistTarget = await Playlist.create({ name: playlist.name });
+                            }
                         } else {
-                            return null;
+                            const targetId = target.dataset.documentId || target.dataset.playlistId;
+                            playlistTarget = game.playlists.get(targetId);
                         }
+
+                        let pack = game.packs.get(data.packId);
+                        const document = await pack.getDocument(data.playlistId);
+                        const sound = document.sounds.get(data.soundId);
+
+                        return PlaylistSound.implementation.create(sound.toObject(), { parent: playlistTarget });
                     } else {
-                        const targetId = target.dataset.documentId || target.dataset.playlistId;
-                        playlistTarget = game.playlists.get(targetId);
+                        let result = await wrapped(...args);
+
+                        if (event.shiftKey) {
+                            const sound = await fromUuid(data.uuid);
+                            if (sound) sound.delete();
+                        }
+
+                        return result;
                     }
-
-                    let pack = game.packs.get(data.packId);
-                    const document = await pack.getDocument(data.playlistId);
-                    const sound = document.sounds.get(data.soundId);
-
-                    return PlaylistSound.implementation.create(sound.toObject(), { parent: playlistTarget });
                 }
             }
             catch (err) {
@@ -133,16 +154,7 @@ export class MonksSoundEnhancements {
             }
 
             return wrapped(...args);
-        }
-
-        if (game.modules.get("lib-wrapper")?.active) {
-            libWrapper.register("monks-sound-enhancements", "PlaylistDirectory.prototype._onDrop", onPlaylistDrop, "MIXED");
-        } else {
-            const oldOnDrop = PlaylistDirectory.prototype._onDrop;
-            PlaylistDirectory.prototype._onDrop = function (event) {
-                return onPlaylistDrop.call(this, oldOnDrop.bind(this), event);
-            }
-        }
+        }, "MIXED");
 
         let PlaylistGetData = async function (wrapped, ...args) {
             let result = await wrapped(...args);
@@ -245,7 +257,7 @@ export class MonksSoundEnhancements {
             name: name
         };
 
-        data.name = data.name || doc.name || target;
+        data.name = data.name || target;
         data.dataset = {
             src: target
         };
@@ -295,8 +307,7 @@ export class MonksSoundEnhancements {
 
         ui.sidebar.tabs.playlists.options.renderUpdateKeys.push("flags");
 
-        if (!(setting("actor-sounds") === "none" || setting("actor-sounds") === 'false'))
-            ActorSounds.injectSoundCtrls();
+        ActorSounds.injectSoundCtrls();
     }
 
     static addSoundEffect(sound) {
@@ -409,7 +420,7 @@ export class MonksSoundEnhancements {
 
         app.options.tabs = [{ navSelector: ".tabs", contentSelector: "form", initial: "basic" }];
         app.options.height = "auto";
-        app.options.dragDrop = [{ dragSelector: ".sound-list .item", dropSelector: ".item-list .item" }];
+        app.options.dragDrop = [{ dragSelector: ".sound-list .item", dropSelector: ".item-list" }];
         app.options.scrollY = [".sound-list .item-list"];
 
         const el = html[0];
@@ -592,11 +603,19 @@ export class MonksSoundEnhancements {
             let playlistId = this.dataset.documentId;
             if (playlistId) {
                 let playlist = app.documents.find(p => p._id == playlistId);
-                if (getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist")) {
-                    if (!game.user.isGM)
-                        $(this).addClass("player-hidden").hide();
-                    else
-                        $('h4.playlist-name', this).html('<i class="fas fa-eye"></i> ' + $('h4.playlist-name', this).html());
+                if (playlist) {
+                    if (getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist")) {
+                        if (!game.user.isGM)
+                            $(this).addClass("player-hidden").hide();
+                        else
+                            $('h4.playlist-name', this).html('<i class="fas fa-eye"></i> ' + $('h4.playlist-name', this).html());
+                    }
+                    if (game.user.isGM && setting("playlist-show-description")) {
+                        let description = getProperty(playlist, "description");
+                        if (description) {
+                            $(this).attr("data-tooltip", description);
+                        }
+                    }
                 }
             }
         });
@@ -789,7 +808,7 @@ export class MonksSoundEnhancements {
 
         if (data.type == "PlaylistSound") {
             // Reference the target playlist and sound elements
-            const target = event.target.closest(".item-list");
+            let target = event.target.closest(".item-list");
             if (!target)
                 return;
 
@@ -811,14 +830,21 @@ export class MonksSoundEnhancements {
                 } else {
                     destination = game.playlists.get(target.dataset.playlistId);
                 }
-                return PlaylistSound.constructor.create(sound.toObject(), { parent: destination });
+                let result = PlaylistSound.implementation.create(sound.toObject(), { parent: destination });
+
+                if (event.shiftKey) {
+                    sound.delete();
+                }
+
+                return result;
             } else {
                 // If there's nothing to sort relative to, or the sound was dropped on itself, do nothing.
+                target = event.target.closest(".item");
                 const targetId = target.dataset.soundId;
                 if (!targetId || (targetId === data.soundId)) return false;
                 sound.sortRelative({
-                    target: playlist.sounds.get(targetId),
-                    siblings: playlist.sounds.filter(s => s.id !== data.soundId)
+                    target: source.sounds.get(targetId),
+                    siblings: source.sounds.filter(s => s.id !== data.soundId)
                 });
             }
         }

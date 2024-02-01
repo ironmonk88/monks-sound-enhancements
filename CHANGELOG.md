@@ -1,3 +1,21 @@
+# Version 11.06
+
+Fixing playing item sounds in PF2e
+
+Fixed issue where turning actor sounds off was still showing them
+
+Fixed issues with playing actor sounds on turn not clearing after finished being played, and not respecting the correct volume
+
+Added the option to move sound between playlist while holding the shift key to move them instead of copying them
+
+Fixed issue where embedded sound links weren't rendering unless there was text added
+
+Fixed issue dragging and dropping onto the sound list only working if it was dropped on a sound file
+
+Added the option to show the playlist description as a tooltip
+
+Added specific settings for Item sounds so that it's independant of actor sounds
+
 # Version 11.05
 
 Fixed issue where actor sound effect plays any time a combat updates

@@ -10,6 +10,11 @@ export const registerSettings = function () {
 		'everyone': i18n("MonksSoundEnhancements.actorsoundsoptions.everyone")
 	};
 
+	let itemsoundsoptions = {
+		'none': i18n("MonksSoundEnhancements.actorsoundsoptions.none"),
+		'everyone': i18n("MonksSoundEnhancements.actorsoundsoptions.everyone")
+	};
+
 	game.settings.register(modulename, "change-style", {
 		name: i18n("MonksSoundEnhancements.change-style.name"),
 		hint: i18n("MonksSoundEnhancements.change-style.hint"),
@@ -29,6 +34,17 @@ export const registerSettings = function () {
 		config: true,
 		default: "npc",
 		choices: actorsoundsoptions,
+		type: String,
+		requiresReload: true
+	});
+
+	game.settings.register(modulename, "item-sounds", {
+		name: i18n("MonksSoundEnhancements.item-sounds.name"),
+		hint: i18n("MonksSoundEnhancements.item-sounds.hint"),
+		scope: "world",
+		config: true,
+		default: "everyone",
+		choices: itemsoundsoptions,
 		type: String,
 		requiresReload: true
 	});
@@ -55,6 +71,18 @@ export const registerSettings = function () {
 		onChange: () => {
 			MonksSoundEnhancements.emit("render");
         }
+	});
+
+	game.settings.register(modulename, "playlist-show-description", {
+		name: i18n("MonksSoundEnhancements.playlist-show-description.name"),
+		hint: i18n("MonksSoundEnhancements.playlist-show-description.hint"),
+		scope: "world",
+		config: true,
+		default: false,
+		type: Boolean,
+		onChange: () => {
+			game.playlists.render();
+		}
 	});
 
 	game.settings.register("core", "globalSoundEffectVolume", {
