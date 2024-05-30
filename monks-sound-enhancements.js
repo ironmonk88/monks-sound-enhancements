@@ -67,10 +67,10 @@ export class MonksSoundEnhancements {
                                     sound.name = token.name;
                                     MonksSoundEnhancements.addSoundEffect(sound);
                                     token.soundeffect = sound;
-                                    token.soundeffect.on("stop", () => {
+                                    token.soundeffect.addEventListener("stop", () => {
                                         delete token.soundeffect;
                                     });
-                                    token.soundeffect.on("end", () => {
+                                    token.soundeffect.addEventListener("end", () => {
                                         delete token.soundeffect;
                                     });
                                     token.soundeffect.effectiveVolume = data.volume;
@@ -176,7 +176,7 @@ export class MonksSoundEnhancements {
                         playTitle: s.pausedTime ? "PLAYLIST.SoundResume" : "PLAYLIST.SoundPlay",
                         currentTime: this._formatTimestamp(s.playing ? s.currentTime : s.pausedTime),
                         durationTime: this._formatTimestamp(s.duration),
-                        lvolume: AudioHelper.volumeToInput(s.effectiveVolume),
+                        lvolume: foundry.audio.AudioHelper.volumeToInput(s.effectiveVolume),
                         isPaused: !s.playing && s.pausedTime,
                         pauseIcon: this._getPauseIcon(v.sound)
                     }
@@ -219,7 +219,7 @@ export class MonksSoundEnhancements {
                         updateData.sounds = [];
                         for (let chk of checkedSounds) {
                             let id = chk.closest(".item").dataset.soundId;
-                            let sound = (isNewerVersion(game.version, "9.9999") ? this.document.sounds.get(id) : this.document.data.sounds.get(id));
+                            let sound = this.document.sounds.get(id);
                             if (sound) {
                                 updateData.sounds.push(sound.toObject());
                             }
@@ -321,8 +321,8 @@ export class MonksSoundEnhancements {
                     MonksSoundEnhancements.updateId = null;
                 }
             }
-            sound.on("stop", _soundStop);
-            sound.on("end", _soundStop);
+            sound.addEventListener("stop", _soundStop);
+            sound.addEventListener("end", _soundStop);
             MonksSoundEnhancements.sounds[id] = { id, sound };
             ui.playlists.render(true);
             if (!MonksSoundEnhancements.updateId) {
@@ -347,11 +347,13 @@ export class MonksSoundEnhancements {
             if (max) max.textContent = ui.playlists._formatTimestamp(v.sound.duration);
 
             // Remove the loading spinner
+            /*
             const play = li.querySelector("a.pause i.fas");
             if (play.classList.contains("fa-spinner")) {
                 play.classList.remove("fa-spin");
                 play.classList.replace("fa-spinner", "fa-pause");
             }
+            */
         }
     }
 
@@ -367,7 +369,7 @@ export class MonksSoundEnhancements {
     }
 
     static async renderPlaylist(app, html, data) {
-        if (getProperty(app.object, "flags.syrinscape") != undefined && game.modules.get("fvtt-syrin-control")?.active) {
+        if (foundry.utils.getProperty(app.object, "flags.syrinscape") != undefined && game.modules.get("fvtt-syrin-control")?.active) {
             return;
         }
         // Inject playlist tabs
@@ -379,7 +381,7 @@ export class MonksSoundEnhancements {
             //compendiumDelete: !data.document.isEmbedded && data.document.compendium && !data.document.compendium.locked && data.document.constructor.canUserModify(game.user, "delete")
         };
 
-        configData.sounds = (isNewerVersion(game.version, "9.9999") ? app.object.sounds : app.object.data.sounds)
+        configData.sounds = app.object.sounds
             .filter(s => !!s)
             .map(s => {
                 return {
@@ -444,7 +446,7 @@ export class MonksSoundEnhancements {
         $('input[name="fade"]', html).parent().after(
             $("<div>").addClass("form-group")
                 .append($("<label>").html(i18n("MonksSoundEnhancements.HidePlaylistHint")))
-                .append($("<input>").attr("type", "checkbox").attr("name", "flags.monks-sound-enhancements.hide-playlist").prop("checked", getProperty(data.document, "flags.monks-sound-enhancements.hide-playlist")))
+                .append($("<input>").attr("type", "checkbox").attr("name", "flags.monks-sound-enhancements.hide-playlist").prop("checked", foundry.utils.getProperty(data.document, "flags.monks-sound-enhancements.hide-playlist")))
         );
 
         app.setPosition({ height: 'auto' });
@@ -469,7 +471,7 @@ export class MonksSoundEnhancements {
         $('input[name="fade"]', html).parent().after(
             $("<div>").addClass("form-group")
                 .append($("<label>").html("Hide name"))
-                .append($("<input>").attr("type", "checkbox").attr("name", "flags.monks-sound-enhancements.hide-name").prop("checked", getProperty(data.document, "flags.monks-sound-enhancements.hide-name")))
+                .append($("<input>").attr("type", "checkbox").attr("name", "flags.monks-sound-enhancements.hide-name").prop("checked", foundry.utils.getProperty(data.document, "flags.monks-sound-enhancements.hide-name")))
         );
 
         app.setPosition({ height: 'auto' });
@@ -577,7 +579,7 @@ export class MonksSoundEnhancements {
                 .append($('<i>').addClass('volume-icon fas fa-volume-down'))
                 .append($('<input>')
                     .addClass('global-volume-slider')
-                    .attr({ name: 'globalSoundEffectVolume', type: 'range', min: '0', max: '1', step: '0.05', value: AudioHelper.volumeToInput(game.settings.get("core", "globalSoundEffectVolume")) })
+                    .attr({ name: 'globalSoundEffectVolume', type: 'range', min: '0', max: '1', step: '0.05', value: foundry.audio.AudioHelper.volumeToInput(game.settings.get("core", "globalSoundEffectVolume")) })
                     .change(app._onGlobalVolume.bind(app))                )
         );
 
@@ -591,9 +593,9 @@ export class MonksSoundEnhancements {
                     let sound = playlist.sounds.get(soundId);
 
                     if (sound) {
-                        if (!game.user.isGM && ((getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist") && setting("playlist-hide-names")) || getProperty(sound, "flags.monks-sound-enhancements.hide-name")))
+                        if (!game.user.isGM && ((foundry.utils.getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist") && setting("playlist-hide-names")) || getProperty(sound, "flags.monks-sound-enhancements.hide-name")))
                             $('.sound-name', this).html("-");
-                        if (game.user.isGM && getProperty(sound, "flags.monks-sound-enhancements.hide-name") && this.closest('#currently-playing') == undefined)
+                        if (game.user.isGM && foundry.utils.getProperty(sound, "flags.monks-sound-enhancements.hide-name") && this.closest('#currently-playing') == undefined)
                             $('.sound-name', this).html('<i class="fas fa-eye"></i> ' + $('.sound-name', this).html());
                     }
                 }
@@ -604,14 +606,14 @@ export class MonksSoundEnhancements {
             if (playlistId) {
                 let playlist = app.documents.find(p => p._id == playlistId);
                 if (playlist) {
-                    if (getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist")) {
+                    if (foundry.utils.getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist")) {
                         if (!game.user.isGM)
                             $(this).addClass("player-hidden").hide();
                         else
                             $('h4.playlist-name', this).html('<i class="fas fa-eye"></i> ' + $('h4.playlist-name', this).html());
                     }
                     if (game.user.isGM && setting("playlist-show-description")) {
-                        let description = getProperty(playlist, "description");
+                        let description = foundry.utils.getProperty(playlist, "description");
                         if (description) {
                             $(this).attr("data-tooltip", description);
                         }
@@ -664,7 +666,7 @@ export class MonksSoundEnhancements {
         let soundId = slider.closest('li.sound').dataset.soundId;
         let mseSound = MonksSoundEnhancements.sounds[soundId];
         if (mseSound && mseSound) {
-            const volume = AudioHelper.inputToVolume(slider.value);
+            const volume = foundry.audio.AudioHelper.inputToVolume(slider.value);
             if (volume === mseSound.sound.effectiveVolume) return;
 
             mseSound.sound.effectiveVolume = volume;
@@ -763,11 +765,11 @@ export class MonksSoundEnhancements {
         } else {
             $(`.item[data-sound-id="${target.dataset.soundId}"] .action-play i`, app.element).attr("title", "Loading Sound").removeClass("fa-play").addClass("fa-sync");
             app._sounds[target.dataset.soundId] = 'loading';
-            AudioHelper.play({ src: sound.sound.src, volume: 1, loop: false }, false).then((sound) => {
-                sound.on("stop", () => {
+            foundry.audio.AudioHelper.play({ src: sound.path, volume: 1, loop: false }, false).then((sound) => {
+                sound.addEventListener("stop", () => {
                     $(`.item[data-sound-id="${target.dataset.soundId}"] .action-play i`, app.element).attr("title", "Play Sound").addClass("fa-play").removeClass("fa-sync fa-stop active");
                 });
-                sound.on("end", () => {
+                sound.addEventListener("end", () => {
                     $(`.item[data-sound-id="${target.dataset.soundId}"] .action-play i`, app.element).attr("title", "Play Sound").addClass("fa-play").removeClass("fa-sync fa-stop active");
                 });
                 if (app._sounds[target.dataset.soundId] == "stop") {
@@ -987,8 +989,8 @@ try {
     */
 
     static getDuration(sound, html) {
-        if (sound.sound.duration || sound._duration)
-            return MonksSoundEnhancements._formatTimestamp(sound.sound.duration || sound._duration);
+        if (sound.sound?.duration || sound._duration)
+            return MonksSoundEnhancements._formatTimestamp(sound.sound?.duration || sound._duration);
 
         // Create a non-dom allocated Audio element
         var au = document.createElement('audio');
@@ -1038,7 +1040,7 @@ Hooks.on("getPlaylistDirectoryEntryContext", (html, options, app) => {
                 let id = li[0].closest(".playlist").dataset.documentId;
                 let playlist = game.playlists.get(id);
                 if (playlist)
-                    return game.user.isGM && getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist");
+                    return game.user.isGM && foundry.utils.getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist");
                 else
                     return false;
             },
@@ -1059,7 +1061,7 @@ Hooks.on("getPlaylistDirectoryEntryContext", (html, options, app) => {
                 let id = li[0].closest(".playlist").dataset.documentId;
                 let playlist = game.playlists.get(id);
                 if (playlist)
-                    return game.user.isGM && !getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist");
+                    return game.user.isGM && !foundry.utils.getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist");
                 else
                     return false;
             },
@@ -1084,7 +1086,7 @@ Hooks.on("getPlaylistDirectorySoundContext", (html, options, app) => {
             condition: li => {
                 let playlist = game.playlists.get(li.data("playlistId"));
                 let sound = playlist.sounds.get(li.data("soundId"));
-                return game.user.isGM && getProperty(sound, "flags.monks-sound-enhancements.hide-name");
+                return game.user.isGM && foundry.utils.getProperty(sound, "flags.monks-sound-enhancements.hide-name");
             },
             callback: li => {
                 let playlist = game.playlists.get(li.data("playlistId"));
@@ -1098,7 +1100,7 @@ Hooks.on("getPlaylistDirectorySoundContext", (html, options, app) => {
             condition: li => {
                 let playlist = game.playlists.get(li.data("playlistId"));
                 let sound = playlist.sounds.get(li.data("soundId"));
-                return game.user.isGM && !getProperty(sound, "flags.monks-sound-enhancements.hide-name");
+                return game.user.isGM && !foundry.utils.getProperty(sound, "flags.monks-sound-enhancements.hide-name");
             },
             callback: li => {
                 let playlist = game.playlists.get(li.data("playlistId"));

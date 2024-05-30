@@ -1,3 +1,7 @@
+# Version 12.01
+
+v12 Compatibility
+
 # Version 11.06
 
 Fixing playing item sounds in PF2e

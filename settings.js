@@ -92,6 +92,8 @@ export const registerSettings = function () {
 		config: false,
 		default: 0.5,
 		type: Number,
-		onChange: v => game.audio._onChangeGlobalVolume("globalSoundEffectVolume", v)
+		onChange: v => {
+			Hooks.callAll("globalSoundEffectVolumeChanged", v);
+		}
 	});
 };
