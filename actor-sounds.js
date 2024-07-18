@@ -87,7 +87,7 @@ export class ActorSounds {
             itemSheetNames.forEach((sheetName) => {
                 Hooks.on("render" + sheetName, (app, html, data) => {
                     // only for GMs or the owner of this npc
-                    if (!app.object.isOwner) return;
+                    if (!(app.object?.isOwner ?? app.document?.isOwner)) return;
     
                     // don't add the button multiple times
                     if ($(html).find("#mseItemSound").length > 0) return;
