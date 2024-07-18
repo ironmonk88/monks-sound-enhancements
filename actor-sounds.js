@@ -30,7 +30,7 @@ export class ActorSounds {
 
     static injectSoundCtrls() {
         if (setting("actor-sounds") !== "none") {
-            let sheetNames = ["ActorSheet"];
+            let sheetNames = ["ActorSheet", "ActorSheetV2"];
 
             if (setting("actor-sounds") === "npc") {
                 let npcObject;
@@ -81,44 +81,52 @@ export class ActorSounds {
         }
 
         if (setting("item-sounds") !== "none") {
-            Hooks.on("renderItemSheet", (app, html, data) => {
-                // only for GMs or the owner of this npc
-                if (!app.object.isOwner) return;
-
-                // don't add the button multiple times
-                if ($(html).find("#mseItemSound").length > 0) return;
-
-                let soundEffect = foundry.utils.getProperty(app.document, "flags.monks-sound-enhancements.sound-effect");
-
-                let hasSound = soundEffect != undefined;
-
-                let button = $('<button>')
-                    .attr('type', "button")
-                    .attr('id', "mseItemSound")
-                    .toggleClass('loaded', hasSound)
-                    .html('<i class="fas fa-volume-up"></i>')
-                    .click(ActorSounds.showDialog.bind(app, "item"));
-
-                let wrap = $('<div class="mseItemName"></div>');
-                $(html).find("input[name='name'],h1[data-field-key='name']").wrap(wrap);
-                $(html).find("input[name='name'],h1[data-field-key='name']").parent().prepend(button);
+            let actorSheetNames = ["ActorSheet", "ActorSheetV2"];
+            let itemSheetNames = ["ItemSheet", "ItemSheetV2"]
+            
+            itemSheetNames.forEach((sheetName) => {
+                Hooks.on("render" + sheetName, (app, html, data) => {
+                    // only for GMs or the owner of this npc
+                    if (!app.object.isOwner) return;
+    
+                    // don't add the button multiple times
+                    if ($(html).find("#mseItemSound").length > 0) return;
+    
+                    let soundEffect = foundry.utils.getProperty(app.document, "flags.monks-sound-enhancements.sound-effect");
+    
+                    let hasSound = soundEffect != undefined;
+    
+                    let button = $('<button>')
+                        .attr('type', "button")
+                        .attr('id', "mseItemSound")
+                        .toggleClass('loaded', hasSound)
+                        .html('<i class="fas fa-volume-up"></i>')
+                        .click(ActorSounds.showDialog.bind(app, "item"));
+    
+                    let wrap = $('<div class="mseItemName"></div>');
+                    $(html).find("input[name='name'],h1[data-field-key='name']").wrap(wrap);
+                    $(html).find("input[name='name'],h1[data-field-key='name']").parent().prepend(button);
+                });
+    
+                Hooks.on("close" + sheetName, (app, html, data) => {
+                    delete app.soundcontext;
+                });
             });
 
-            Hooks.on("closeItemSheet", (app, html, data) => {
-                delete app.soundcontext;
-            });
+            actorSheetNames.forEach((sheetName) => {
+                Hooks.on("render" + sheetName, (app, html, data) => {
+                    $('.inventory-list .item-list .item,.inventory-list .items > li').each(function () {
+                        let itemId = $(this).attr('data-item-id');
+                        let item = data.items.find(i => i._id == itemId);
+    
+                        let soundEffect = foundry.utils.getProperty(item, "flags.monks-sound-enhancements.sound-effect");
+                        if (soundEffect) {
+                            $('.item-name h4', this).before($("<a>").addClass('item-sound').html('<i class="fas fa-play"></i>').on("click", ActorSounds.ItemPlay.bind(app, item)));
+                        }
+                    })
+                });
+            })
 
-            Hooks.on("renderActorSheet", (app, html, data) => {
-                $('.inventory-list .item-list .item,.inventory-list .items > li').each(function () {
-                    let itemId = $(this).attr('data-item-id');
-                    let item = data.items.find(i => i._id == itemId);
-
-                    let soundEffect = foundry.utils.getProperty(item, "flags.monks-sound-enhancements.sound-effect");
-                    if (soundEffect) {
-                        $('.item-name h4', this).before($("<a>").addClass('item-sound').html('<i class="fas fa-play"></i>').on("click", ActorSounds.ItemPlay.bind(app, item)));
-                    }
-                })
-            });
         }
     }
 
