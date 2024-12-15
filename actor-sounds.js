@@ -26,6 +26,15 @@ export class ActorSounds {
         TokenDocument.prototype.playSound = function(options) {
             ActorSounds.loadSoundEffect(this, options);
         }
+
+        ItemDocument.prototype.playSound = function (options) {
+            ActorSounds.loadSoundEffect(this, options);
+        }
+
+        Actor.prototype.addSound = function (audiofile, volume = 1) {
+            this.setFlag('monks-sound-enhancements', 'sound-effect', audiofile);
+            this.setFlag('monks-sound-enhancements', 'volume', volume);
+        }
     }
 
     static injectSoundCtrls() {
@@ -70,8 +79,8 @@ export class ActorSounds {
                         .click(ActorSounds.showDialog.bind(app, "actor"));
 
                     let wrap = $('<div class="mseCharacterName"></div>');
-                    $(html).find("input[name='name'],h1[data-field-key='name']").wrap(wrap);
-                    $(html).find("input[name='name'],h1[data-field-key='name']").parent().prepend(button);
+                    $(html).find("input[name='name'],h1[data-field-key='name'],div.document-name,input[data-tidy-field='name']").wrap(wrap);
+                    $(html).find("input[name='name'],h1[data-field-key='name'],div.document-name,input[data-tidy-field='name']").parent().prepend(button);
                 });
 
                 Hooks.on("close" + sheetName, (app, html, data) => {
@@ -352,8 +361,7 @@ export class ActorSoundDialog extends FormApplication {
         if (audiofile && !audiofile.startsWith("/") && !audiofile.startsWith("http"))
             audiofile = "/" + audiofile;
 
-        this.object.setFlag('monks-sound-enhancements', 'sound-effect', audiofile);
-        this.object.setFlag('monks-sound-enhancements', 'volume', formData.volume);
+        this.object.addSound(audiofile, formData.volume);
     }
 
     async playSound() {

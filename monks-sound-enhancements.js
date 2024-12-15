@@ -593,7 +593,7 @@ export class MonksSoundEnhancements {
                     let sound = playlist.sounds.get(soundId);
 
                     if (sound) {
-                        if (!game.user.isGM && ((foundry.utils.getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist") && setting("playlist-hide-names")) || getProperty(sound, "flags.monks-sound-enhancements.hide-name")))
+                        if (!game.user.isGM && ((foundry.utils.getProperty(playlist, "flags.monks-sound-enhancements.hide-playlist") && setting("playlist-hide-names")) || foundry.utils.getProperty(sound, "flags.monks-sound-enhancements.hide-name")))
                             $('.sound-name', this).html("-");
                         if (game.user.isGM && foundry.utils.getProperty(sound, "flags.monks-sound-enhancements.hide-name") && this.closest('#currently-playing') == undefined)
                             $('.sound-name', this).html('<i class="fas fa-eye"></i> ' + $('.sound-name', this).html());
@@ -815,13 +815,23 @@ export class MonksSoundEnhancements {
                 return;
 
             let source;
-            if (data.packId) {
-                let pack = game.packs.get(data.packId);
-                source = await pack.getDocument(data.playlistId);
+            let sound;
+            if (data.uuid) {
+                sound = await fromUuid(data.uuid);
+                source = sound?.parent;
             } else {
-                source = game.playlists.get(data.playlistId);
+                if (data.packId) {
+                    let pack = game.packs.get(data.packId);
+                    source = await pack.getDocument(data.playlistId);
+                } else {
+                    source = game.playlists.get(data.playlistId);
+                }
+                if (source)
+                    sound = source.sounds.get(data.soundId);
             }
-            const sound = source.sounds.get(data.soundId);
+            if (!source)
+                return;
+
 
             let destId = target.dataset.playlistId;
             if (destId != source.id) {

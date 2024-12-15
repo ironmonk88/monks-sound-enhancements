@@ -1,3 +1,13 @@
+# Version 12.02
+
+Fixing issues with the new DnD5e character sheet
+
+Fixing issues with Tidy 5e character sheets
+
+Adding extra API commands
+
+Fixing issues dragging a sound back to a compendium
+
 # Version 12.01
 
 v12 Compatibility
