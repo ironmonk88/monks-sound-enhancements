@@ -27,7 +27,7 @@ export class ActorSounds {
             ActorSounds.loadSoundEffect(this, options);
         }
 
-        ItemDocument.prototype.playSound = function (options) {
+        Item.prototype.playSound = function (options) {
             ActorSounds.loadSoundEffect(this, options);
         }
 

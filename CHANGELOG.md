@@ -1,3 +1,7 @@
+# Version 12.03
+
+Fixed a bug
+
 # Version 12.02
 
 Fixing issues with the new DnD5e character sheet
